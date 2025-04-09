@@ -1,0 +1,89 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuickTask</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen p-4">
+  <div class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-md">
+    <h1 class="text-2xl font-bold mb-4 text-center">QuickTask 📝</h1>
+    <div class="flex gap-2 mb-4">
+      <input id="taskInput" type="text" placeholder="Add a task..."
+        class="flex-grow p-2 rounded border">
+      <button onclick="addTask()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Add</button>
+    </div>
+    <ul id="taskList" class="space-y-2"></ul>
+  </div>
+
+  <script>
+    const taskInput = document.getElementById('taskInput');
+    const taskList = document.getElementById('taskList');
+
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+    function saveTasks() {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    function renderTasks() {
+      taskList.innerHTML = '';
+      tasks.forEach(task => {
+        const li = document.createElement('li');
+        li.className = 'flex items-center justify-between bg-gray-50 p-2 rounded shadow-sm';
+
+        const left = document.createElement('div');
+        left.className = 'flex items-center gap-2';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = task.completed;
+        checkbox.onchange = () => toggleTask(task.id);
+
+        const span = document.createElement('span');
+        span.textContent = task.text;
+        if (task.completed) span.classList.add('line-through', 'text-gray-400');
+
+        left.appendChild(checkbox);
+        left.appendChild(span);
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '✕';
+        delBtn.className = 'text-red-500 hover:text-red-700';
+        delBtn.onclick = () => deleteTask(task.id);
+
+        li.appendChild(left);
+        li.appendChild(delBtn);
+
+        taskList.appendChild(li);
+      });
+    }
+
+    function addTask() {
+      const text = taskInput.value.trim();
+      if (!text) return;
+      const newTask = { id: Date.now(), text, completed: false };
+      tasks.push(newTask);
+      taskInput.value = '';
+      saveTasks();
+      renderTasks();
+    }
+
+    function toggleTask(id) {
+      tasks = tasks.map(task => task.id === id ? { ...task, completed: !task.completed } : task);
+      saveTasks();
+      renderTasks();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(task => task.id !== id);
+      saveTasks();
+      renderTasks();
+    }
+
+    renderTasks();
+  </script>
+</body>
+</html>
